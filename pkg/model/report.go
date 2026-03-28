@@ -16,6 +16,7 @@ const (
 	OperationTypeDelete  OperationType = "delete"
 	OperationTypeError   OperationType = "error"
 	OperationTypePatch   OperationType = "patch"
+	OperationTypePause   OperationType = "pause"
 	OperationTypeScript  OperationType = "script"
 	OperationTypeSleep   OperationType = "sleep"
 	OperationTypeUpdate  OperationType = "update"

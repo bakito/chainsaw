@@ -15,6 +15,7 @@ func TryOperation(
 	tc enginecontext.TestContext,
 	handler v1alpha1.Operation,
 	cleaner cleaner.CleanerCollector,
+	onPause func(),
 ) (model.OperationType, []Operation, error) {
 	if handler.Apply != nil {
 		loaded, err := applyOperation(ctx, tc, cleaner, *handler.Apply)
@@ -62,6 +63,8 @@ func TryOperation(
 		return model.OperationTypeScript, []Operation{scriptOperation(*handler.Script)}, nil
 	} else if handler.Sleep != nil {
 		return model.OperationTypeSleep, []Operation{sleepOperation(*handler.Sleep)}, nil
+	} else if handler.Pause != nil {
+		return model.OperationTypePause, []Operation{pauseOperation(onPause)}, nil
 	} else if handler.Update != nil {
 		loaded, err := updateOperation(ctx, tc, *handler.Update)
 		return model.OperationTypeUpdate, loaded, err
@@ -76,6 +79,7 @@ func CatchOperation(
 	ctx context.Context,
 	tc enginecontext.TestContext,
 	handler v1alpha1.CatchFinally,
+	onPause func(),
 ) ([]Operation, error) {
 	var ops []Operation
 	if handler.PodLogs != nil {
@@ -110,6 +114,8 @@ func CatchOperation(
 		ops = append(ops, scriptOperation(*handler.Script))
 	} else if handler.Sleep != nil {
 		ops = append(ops, sleepOperation(*handler.Sleep))
+	} else if handler.Pause != nil {
+		ops = append(ops, pauseOperation(onPause))
 	} else if handler.Wait != nil {
 		ops = append(ops, waitOperation(*handler.Wait))
 	} else {

@@ -17,6 +17,7 @@ func TestFinally_Bindings(t *testing.T) {
 		Command  *Command
 		Script   *Script
 		Sleep    *Sleep
+		Pause    *Pause
 	}
 	tests := []struct {
 		name   string
@@ -99,6 +100,7 @@ func TestFinally_Outputs(t *testing.T) {
 		Command  *Command
 		Script   *Script
 		Sleep    *Sleep
+		Pause    *Pause
 	}
 	tests := []struct {
 		name   string

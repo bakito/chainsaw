@@ -41,7 +41,7 @@ func TestNew(t *testing.T) {
 	}}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := New(tt.clock, tt.onFailure)
+			got := New(tt.clock, tt.onFailure, nil)
 			runner, ok := got.(*runner)
 			assert.True(t, ok)
 			assert.Equal(t, tt.clock, runner.clock)

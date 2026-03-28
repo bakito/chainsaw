@@ -31,16 +31,18 @@ type Runner interface {
 	Run(context.Context, v1alpha2.NamespaceOptions, enginecontext.TestContext, ...discovery.Test) error
 }
 
-func New(clock clock.PassiveClock, onFailure func()) Runner {
+func New(clock clock.PassiveClock, onFailure func(), onPause func()) Runner {
 	return &runner{
 		clock:     clock,
 		onFailure: onFailure,
+		onPause:   onPause,
 	}
 }
 
 type runner struct {
 	clock     clock.PassiveClock
 	onFailure func()
+	onPause   func()
 	deps      *internal.TestDeps
 }
 
@@ -381,7 +383,7 @@ func (r *runner) runOperation(
 	if operation.Compiler != nil {
 		tc = tc.WithDefaultCompiler(string(*operation.Compiler))
 	}
-	opType, actions, err := operations.TryOperation(ctx, tc, operation, cleaner)
+	opType, actions, err := operations.TryOperation(ctx, tc, operation, cleaner, r.onPause)
 	if err != nil {
 		logging.Log(ctx, logging.Try, logging.ErrorStatus, nil, color.BoldRed, logging.ErrSection(err))
 		r.onFail()
@@ -411,7 +413,7 @@ func (r *runner) runCatch(
 	if operation.Compiler != nil {
 		tc = tc.WithDefaultCompiler(string(*operation.Compiler))
 	}
-	actions, err := operations.CatchOperation(ctx, tc, operation)
+	actions, err := operations.CatchOperation(ctx, tc, operation, r.onPause)
 	if err != nil {
 		logging.Log(ctx, logging.Try, logging.ErrorStatus, nil, color.BoldRed, logging.ErrSection(err))
 		r.onFail()

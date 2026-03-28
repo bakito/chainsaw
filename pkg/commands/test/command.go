@@ -22,6 +22,7 @@ import (
 	restutils "github.com/kyverno/chainsaw/pkg/utils/rest"
 	"github.com/kyverno/chainsaw/pkg/version"
 	"github.com/kyverno/pkg/ext/output/color"
+	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
 	"helm.sh/helm/v4/pkg/strvals"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -386,7 +387,15 @@ func Command() *cobra.Command {
 					fmt.Fscanln(stdIn) //nolint:errcheck
 				}
 			}
-			runner := runner.New(clock, onFailure)
+			var onPause = func() {
+				if isatty.IsTerminal(os.Stdin.Fd()) || isatty.IsCygwinTerminal(os.Stdin.Fd()) {
+					fmt.Fprintln(stdErr, "Pause, press ENTER to continue...")
+					fmt.Fscanln(stdIn) //nolint:errcheck
+				} else {
+					fmt.Fprintln(stdErr, "Pause requested but interactive terminal not available, continuing...")
+				}
+			}
+			runner := runner.New(clock, onFailure, onPause)
 			err = runner.Run(context.Background(), configuration.Spec.Namespace, tc, testToRun...)
 			fmt.Fprintln(stdOut, "Tests Summary...")
 			fmt.Fprintf(stdOut, "- Passed  tests %d\n", tc.Passed())

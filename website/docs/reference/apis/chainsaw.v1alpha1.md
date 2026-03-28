@@ -373,6 +373,7 @@ during the testing process.</p>
 | `command` | [`Command`](#chainsaw-kyverno-io-v1alpha1-Command) |  |  | <p>Command defines a command to run.</p> |
 | `script` | [`Script`](#chainsaw-kyverno-io-v1alpha1-Script) |  |  | <p>Script defines a script to run.</p> |
 | `sleep` | [`Sleep`](#chainsaw-kyverno-io-v1alpha1-Sleep) |  |  | <p>Sleep defines zzzz.</p> |
+| `pause` | [`Pause`](#chainsaw-kyverno-io-v1alpha1-Pause) |  |  | <p>Pause defines a pause in the execution that must be completed before continuing.</p> |
 
 ## Clusters     {#chainsaw-kyverno-io-v1alpha1-Clusters}
 
@@ -708,6 +709,7 @@ For multiple objects use labels.</p>
 | `proxy` | [`Proxy`](#chainsaw-kyverno-io-v1alpha1-Proxy) |  |  | <p>Proxy runs a proxy request.</p> |
 | `script` | [`Script`](#chainsaw-kyverno-io-v1alpha1-Script) |  |  | <p>Script defines a script to run.</p> |
 | `sleep` | [`Sleep`](#chainsaw-kyverno-io-v1alpha1-Sleep) |  |  | <p>Sleep defines zzzz.</p> |
+| `pause` | [`Pause`](#chainsaw-kyverno-io-v1alpha1-Pause) |  |  | <p>Pause defines a pause in the execution that must be completed before continuing.</p> |
 | `update` | [`Update`](#chainsaw-kyverno-io-v1alpha1-Update) |  |  | <p>Update represents an update operation.</p> |
 | `wait` | [`Wait`](#chainsaw-kyverno-io-v1alpha1-Wait) |  |  | <p>Wait determines the resource wait collector to execute.</p> |
 
@@ -759,6 +761,16 @@ If a resource doesn't exist yet in the cluster it will fail.</p>
 | `ActionOutputs` | [`ActionOutputs`](#chainsaw-kyverno-io-v1alpha1-ActionOutputs) | :white_check_mark: | :white_check_mark: | *No description provided.* |
 | `ActionResourceRef` | [`ActionResourceRef`](#chainsaw-kyverno-io-v1alpha1-ActionResourceRef) | :white_check_mark: | :white_check_mark: | *No description provided.* |
 | `ActionTimeout` | [`ActionTimeout`](#chainsaw-kyverno-io-v1alpha1-ActionTimeout) | :white_check_mark: | :white_check_mark: | *No description provided.* |
+
+## Pause     {#chainsaw-kyverno-io-v1alpha1-Pause}
+
+**Appears in:**
+    
+- [CatchFinally](#chainsaw-kyverno-io-v1alpha1-CatchFinally)
+- [Operation](#chainsaw-kyverno-io-v1alpha1-Operation)
+
+<p>Pause represents an interaptuin to help debugging a test step.</p>
+
 
 ## PodLogs     {#chainsaw-kyverno-io-v1alpha1-PodLogs}
 

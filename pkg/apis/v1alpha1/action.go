@@ -336,6 +336,10 @@ type Sleep struct {
 	Duration metav1.Duration `json:"duration"`
 }
 
+// Pause represents an interaptuin to help debugging a test step.
+type Pause struct {
+}
+
 // Update represents a set of resources that should be updated.
 // If a resource does not exist in the cluster it will fail.
 type Update struct {

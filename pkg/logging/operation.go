@@ -15,6 +15,7 @@ const (
 	Get      Operation = "GET"
 	Internal Operation = "INTERNAL"
 	Patch    Operation = "PATCH"
+	Pause    Operation = "PAUSE"
 	Script   Operation = "SCRIPT"
 	Sleep    Operation = "SLEEP"
 	Stderr   Operation = "STDERR"

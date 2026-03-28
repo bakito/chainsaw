@@ -1130,6 +1130,13 @@
                 },
                 "additionalProperties": false
               },
+              "pause": {
+                "description": "Pause defines a pause in the execution that must be completed before continuing.",
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
               "podLogs": {
                 "description": "PodLogs determines the pod logs collector to execute.",
                 "type": [

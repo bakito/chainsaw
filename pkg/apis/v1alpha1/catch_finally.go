@@ -54,6 +54,10 @@ type CatchFinally struct {
 	// Sleep defines zzzz.
 	// +optional
 	Sleep *Sleep `json:"sleep,omitempty"`
+
+	// Pause defines a pause in the execution that must be completed before continuing.
+	// +optional
+	Pause *Pause `json:"pause,omitempty"`
 }
 
 func (f *CatchFinally) Bindings() []Binding {

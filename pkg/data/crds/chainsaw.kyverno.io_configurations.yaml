@@ -516,6 +516,10 @@ spec:
                       - apiVersion
                       - kind
                       type: object
+                    pause:
+                      description: Pause defines a pause in the execution that must
+                        be completed before continuing.
+                      type: object
                     podLogs:
                       description: PodLogs determines the pod logs collector to execute.
                       not:
@@ -1562,6 +1566,10 @@ spec:
                           required:
                           - apiVersion
                           - kind
+                          type: object
+                        pause:
+                          description: Pause defines a pause in the execution that
+                            must be completed before continuing.
                           type: object
                         podLogs:
                           description: PodLogs determines the pod logs collector to

@@ -95,6 +95,10 @@ type Operation struct {
 	// +optional
 	Sleep *Sleep `json:"sleep,omitempty"`
 
+	// Pause defines a pause in the execution that must be completed before continuing.
+	// +optional
+	Pause *Pause `json:"pause,omitempty"`
+
 	// Update represents an update operation.
 	// +optional
 	Update *Update `json:"update,omitempty"`
