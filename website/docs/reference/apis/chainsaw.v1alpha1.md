@@ -747,7 +747,10 @@ For multiple objects use labels.</p>
 - [Operation](#chainsaw-kyverno-io-v1alpha1-Operation)
 
 <p>Patch represents a set of resources that should be patched.
-If a resource doesn't exist yet in the cluster it will fail.</p>
+If a resource doesn't exist yet in the cluster it will fail.
+Subresources can be patched by adding the annotation &quot;chainsaw.kyverno.io/patch-subresource&quot;,
+where the value is the name of the subresource to be patched, to the resource. A subresource defined via
+annotation wins against the subresource defined the Patch struct.</p>
 
 
 | Field | Type | Required | Inline | Description |

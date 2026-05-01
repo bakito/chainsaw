@@ -79,12 +79,38 @@ spec:
     - try:
         - patch:
             # specify resource inline, where a subresource is patched
-            subresoruce: status
+            subresource: status # the name of the subresource to be patched
             resource:
               apiVersion: v1
               kind: Pod
               metadata:
                 name: test-pod
+              status:
+                conditions:
+                  - type: TestCondition
+                    status: "True"
+                    reason: TestReason
+                    message: TestMessage
+                    lastTransitionTime: "2026-03-28T10:51:35Z"
+---
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: example-subresource-annotation
+spec:
+  steps:
+    - try:
+        - patch:
+            # specify resource inline, where a subresource is patched
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-pod
+                annotations:
+                  # The name of the subresource to be patched.
+                  # A subresource defined via annotation wins against the subresource defined the Patch struct.
+                  chainsaw.kyverno.io/patch-subresource: status
               status:
                 conditions:
                   - type: TestCondition

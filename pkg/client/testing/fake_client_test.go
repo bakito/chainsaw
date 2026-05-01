@@ -99,6 +99,7 @@ func TestFakeClient(t *testing.T) {
 		assert.NoError(t, err)
 		assert.True(t, called)
 		assert.Equal(t, 1, c.NumCalls())
+		assert.Empty(t, c.CalledSubresources())
 	})
 
 	t.Run("IsObjectNamespaced", func(t *testing.T) {
@@ -145,6 +146,7 @@ func TestFakeClient(t *testing.T) {
 		assert.Nil(t, sw)
 		assert.True(t, called)
 		assert.Equal(t, 1, c.NumCalls())
+		assert.Equal(t, []string{"status"}, c.CalledSubresources())
 	})
 
 	t.Run("SubResource - without Fn", func(t *testing.T) {

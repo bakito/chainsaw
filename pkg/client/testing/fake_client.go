@@ -20,6 +20,7 @@ type FakeClient struct {
 	IsObjectNamespacedFn func(call int, obj runtime.Object) (bool, error)
 	RESTMapperFn         func(call int) meta.RESTMapper
 	numCalls             int
+	calledSubresources   []string
 }
 
 func (c *FakeClient) Get(ctx context.Context, key client.ObjectKey, obj client.Object, opts ...client.GetOption) error {
@@ -63,15 +64,23 @@ func (c *FakeClient) RESTMapper() meta.RESTMapper {
 }
 
 func (c *FakeClient) SubResource(subResource string) client.SubResourceClient {
-	defer func() { c.numCalls++ }()
+	defer func() {
+		c.numCalls++
+		c.calledSubresources = append(c.calledSubresources, subResource)
+	}()
 	if c.SubResourceFn != nil {
 		return c.SubResourceFn(subResource)
 	}
+
 	return NewFakeSubResourceWriter()
 }
 
 func (c *FakeClient) NumCalls() int {
 	return c.numCalls
+}
+
+func (c *FakeClient) CalledSubresources() []string {
+	return c.calledSubresources
 }
 
 type FakeSubResourceWriter struct {

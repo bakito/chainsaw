@@ -58,16 +58,43 @@ spec:
                   reason: TestReason
                   message: TestMessage
                   lastTransitionTime: "2026-03-28T10:51:35Z"
-      - assert:
+  - description: "Patch the 'status' subresource of a Pod via patch annotation"
+    try:
+      - apply:
           resource:
             apiVersion: v1
             kind: Pod
             metadata:
-              name: test-pod
+              name: test-pod-annotated
+            spec:
+              containers:
+                - name: test-container
+                  image: busybox
+      - patch:
+          resource:
+            apiVersion: v1
+            kind: Pod
+            metadata:
+              name: test-pod-annotated
+              annotations:
+                chainsaw.kyverno.io/patch-subresource: status
             status:
               conditions:
                 - type: TestCondition
                   status: "True"
                   reason: TestReason
-                  message: TestMessage
+                  message: AnnotatedTestMessage
+                  lastTransitionTime: "2026-03-28T10:51:35Z"
+      - assert:
+          resource:
+            apiVersion: v1
+            kind: Pod
+            metadata:
+              name: test-pod-annotated
+            status:
+              conditions:
+                - type: TestCondition
+                  status: "True"
+                  reason: TestReason
+                  message: AnnotatedTestMessage
                   lastTransitionTime: "2026-03-28T10:51:35Z"

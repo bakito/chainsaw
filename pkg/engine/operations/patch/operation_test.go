@@ -47,12 +47,13 @@ func Test_create(t *testing.T) {
 	}
 
 	tests := []struct {
-		name        string
-		object      unstructured.Unstructured
-		client      *tclient.FakeClient
-		expect      []v1alpha1.Expectation
-		expectedErr error
-		subresource string
+		name                  string
+		object                unstructured.Unstructured
+		client                *tclient.FakeClient
+		expect                []v1alpha1.Expectation
+		expectedErr           error
+		subresource           string
+		expectSubresourceName string
 	}{{
 		name:   "Resource doesn't exist",
 		object: pod,
@@ -220,9 +221,35 @@ func Test_create(t *testing.T) {
 				return nil
 			},
 		},
-		expect:      nil,
-		expectedErr: nil,
-		subresource: "status",
+		expect:                nil,
+		expectedErr:           nil,
+		subresource:           "status",
+		expectSubresourceName: "status",
+	}, {
+		name:   "Dry Run Subresource Resource annotation exists, patch it",
+		object: withSubresourcePatch(pod, "status"),
+		client: &tclient.FakeClient{
+			GetFn: func(ctx context.Context, _ int, _ client.ObjectKey, obj client.Object, opts ...client.GetOption) error {
+				*obj.(*unstructured.Unstructured) = pod
+				return nil
+			},
+		},
+		expect:                nil,
+		expectedErr:           nil,
+		expectSubresourceName: "status",
+	}, {
+		name:   "Dry Run Subresource Resource annotation exists, it overwrites the patch subresource, patch it",
+		object: withSubresourcePatch(pod, "status"),
+		client: &tclient.FakeClient{
+			GetFn: func(ctx context.Context, _ int, _ client.ObjectKey, obj client.Object, opts ...client.GetOption) error {
+				*obj.(*unstructured.Unstructured) = pod
+				return nil
+			},
+		},
+		expect:                nil,
+		expectedErr:           nil,
+		subresource:           "foo",
+		expectSubresourceName: "status",
 	}}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -247,6 +274,9 @@ func Test_create(t *testing.T) {
 				assert.EqualError(t, err, tt.expectedErr.Error())
 			} else {
 				assert.NoError(t, err)
+			}
+			if tt.expectSubresourceName != "" {
+				assert.Equal(t, []string{tt.expectSubresourceName}, tt.client.CalledSubresources())
 			}
 		})
 	}
@@ -434,6 +464,118 @@ func Test_retry_logic(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 			}
+		})
+	}
+}
+
+func withSubresourcePatch(obj unstructured.Unstructured, subresource string) unstructured.Unstructured {
+	patchedObject := obj.DeepCopy()
+
+	annotations := patchedObject.GetAnnotations()
+	if annotations == nil {
+		annotations = make(map[string]string)
+	}
+
+	annotations[annotationPatchSubresource] = subresource
+	patchedObject.SetAnnotations(annotations)
+
+	return *patchedObject
+}
+
+func Test_evaluateSubresourcePatch(t *testing.T) {
+	tests := []struct {
+		name string
+		obj  *unstructured.Unstructured
+		want string
+	}{
+		{
+			name: "no annotations",
+			obj: &unstructured.Unstructured{
+				Object: map[string]any{
+					"metadata": map[string]any{},
+				},
+			},
+			want: "",
+		},
+		{
+			name: "other annotations",
+			obj: &unstructured.Unstructured{
+				Object: map[string]any{
+					"metadata": map[string]any{
+						"annotations": map[string]string{
+							"foo": "bar",
+						},
+					},
+				},
+			},
+			want: "",
+		},
+		{
+			name: "patch subresource annotation",
+			obj: &unstructured.Unstructured{
+				Object: map[string]any{
+					"metadata": map[string]any{
+						"annotations": map[string]any{
+							annotationPatchSubresource: "status",
+						},
+					},
+				},
+			},
+			want: "status",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := evaluateSubresourcePatch(tt.obj)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func Test_removePatchSubresourceAnnotation(t *testing.T) {
+	tests := []struct {
+		name        string
+		annotations map[string]string
+		want        map[string]string
+	}{
+		{
+			name:        "no annotations",
+			annotations: map[string]string{},
+			want:        nil,
+		},
+		{
+			name: "other annotations",
+			annotations: map[string]string{
+				"foo": "bar",
+			},
+			want: map[string]string{
+				"foo": "bar",
+			},
+		},
+		{
+			name: "patch subresource annotation only",
+			annotations: map[string]string{
+				annotationPatchSubresource: "status",
+			},
+			want: nil,
+		},
+		{
+			name: "patch subresource annotation and others",
+			annotations: map[string]string{
+				annotationPatchSubresource: "status",
+				"foo":                      "bar",
+			},
+			want: map[string]string{
+				"foo": "bar",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			us := &unstructured.Unstructured{}
+			us.SetAnnotations(tt.annotations)
+			removePatchSubresourceAnnotation(us)
+			assert.Equal(t, tt.want, us.GetAnnotations())
 		})
 	}
 }

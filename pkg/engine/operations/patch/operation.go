@@ -23,6 +23,12 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
+const (
+	annotationPatchSubresource = "chainsaw.kyverno.io/patch-subresource"
+	fieldMetadata              = "metadata"
+	fieldAnnotations           = "annotations"
+)
+
 type operation struct {
 	compilers   compilers.Compilers
 	client      client.Client
@@ -134,6 +140,14 @@ func (o *operation) tryPatchResource(ctx context.Context, bindings apis.Bindings
 }
 
 func (o *operation) updateResource(ctx context.Context, bindings apis.Bindings, actual *unstructured.Unstructured, obj unstructured.Unstructured) (outputs.Outputs, error) {
+	sr := evaluateSubresourcePatch(&obj)
+	removePatchSubresourceAnnotation(&obj)
+
+	if sr == "" {
+		// fallback use patch action subresource
+		sr = o.subresource
+	}
+
 	patched, err := client.PatchObject(actual, &obj)
 	if err != nil {
 		return nil, err
@@ -142,10 +156,29 @@ func (o *operation) updateResource(ctx context.Context, bindings apis.Bindings, 
 	if err != nil {
 		return nil, err
 	}
-	if o.subresource != "" {
-		return o.handleCheck(ctx, bindings, obj, o.client.SubResource(o.subresource).Patch(ctx, actual, client.RawPatch(types.MergePatchType, bytes)))
+
+	if sr != "" {
+		return o.handleCheck(ctx, bindings, obj, o.client.SubResource(sr).Patch(ctx, actual, client.RawPatch(types.MergePatchType, bytes)))
 	}
 	return o.handleCheck(ctx, bindings, obj, o.client.Patch(ctx, actual, client.RawPatch(types.MergePatchType, bytes)))
+}
+
+func evaluateSubresourcePatch(obj *unstructured.Unstructured) string {
+	annotations := obj.GetAnnotations()
+	if annotations == nil {
+		return ""
+	}
+
+	return annotations[annotationPatchSubresource]
+}
+
+// Don't add chainsaw annotation to patch.
+func removePatchSubresourceAnnotation(obj *unstructured.Unstructured) {
+	unstructured.RemoveNestedField(obj.Object, fieldMetadata, fieldAnnotations, annotationPatchSubresource)
+
+	if len(obj.GetAnnotations()) == 0 {
+		unstructured.RemoveNestedField(obj.Object, fieldMetadata, fieldAnnotations)
+	}
 }
 
 func (o *operation) handleCheck(ctx context.Context, bindings apis.Bindings, obj unstructured.Unstructured, err error) (_outputs outputs.Outputs, _err error) {
